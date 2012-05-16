@@ -12,7 +12,7 @@ class Mysql
 		$result = mysql_query ( $query )  ;
 		if (strtoupper(substr(trim($query), 0, 6))==='SELECT' && $fetch)
 		{
-			return fetch($result);
+			return $this->fetch($result);
 		}
 		else
 		{
@@ -40,22 +40,17 @@ class Mysql
 				$this->pr($e);
 				if ($rollback_on_error)
 				{
-					query("ROLLBACK");
-					exit(0);
+					$this->query("ROLLBACK");
 				}
+				exit(0);
 			}
 			return false;
 		}
 	}
 	
-	function pr($var) 
-	{
-		echo "<pre>";
-		print_r($var);
-		echo "</pre>";
-		flush();
+	function pr($param) {
+		print_r($param."\n");
 	}
-
 	
 	function key1($param) 
 	{
