@@ -34,6 +34,9 @@ while(1==1){
 	foreach( $consultas as $x=>$consulta){
 		if($consultas[$x]['n'] > $minimo || $consultas[$x]['cont']<0)
 		{
+			$sql = "select block from queries where id = {$consulta['id']}";
+			$block = mysql_query($sql) or die(mysql_error());
+			$block = mysql_fetch_row($block)
 			$start = microtime(true);
 			if($consulta['refresh']){
 				$url = $host.$consulta['refresh'];
