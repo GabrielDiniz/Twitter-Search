@@ -6,7 +6,8 @@ $parametros = "?rpp=100&include_entities=true&result_type=recent&q=";
 $todas = array();
 $consultas = array();
 while(1==1){
-	$result = $con->query("SELECT * from queries order by frequencia DESC");
+	$result = $con->query("SELECT * from queries order by frequencia");
+	
 	foreach ($result as $data){
 		if(!in_array($data[1],$todas)){
 			$consultas[$data[1]] = array(
@@ -38,10 +39,9 @@ while(1==1){
 			if (!$block)
 			{
 				$con->query("update queries set block = 1 where id = {$consulta['id']}");
+				$consulta['ultimo'] = $con->query("SELECT ultimo from queries where id = {$consulta['id']}");
 				$start = microtime(true);
-				if($consulta['refresh']){
-					$url = $host.$consulta['refresh'];
-				}elseif ($consulta['ultimo']){
+				if ($consulta['ultimo']){
 					$url = $host."?since_id=".$consulta['ultimo']."&include_entities=true&q=".$consulta['pesquisa'];
 				}
 				else {
@@ -60,7 +60,7 @@ while(1==1){
 				$i = -1;
 				foreach($output['results'] as $i=>$tweet){
 					$json = str_replace("'","\'",json_encode($tweet));
-					$con->query("insert into tweet values (null,'$json')");
+					$con->query("insert into tweet values (null,'$json','{$tweet['id_str']}')",false);
 					$ultimo = $tweet['id_str'];
 				}
 				$i++;
@@ -84,6 +84,9 @@ while(1==1){
 				print_r("Depois de \033[0;34m" . number_format( $agora - $consultas[$x]['ultima_execucao'], 3) . "\033[0;0m s\tMais \033[0;32m$i\033[0;0m\tresultados para \033[0;31m{$consulta['pesquisa']}\033[0;0m$separador em \033[0;35m" . number_format( $agora - $start, 3) . "\033[0;0m s \033[0;33m$data\033[0;0m\n");
 				$consultas[$x]['ultima_execucao'] = $agora;
 				
+			}else{
+				//echo "{$consulta['pesquisa']} Bloqueado... :(\n";
+				$consultas[$x]['n'] /= 2;
 			}
 		}else {
 			$consultas[$x]['n']+=($wait/$fator)*($consulta['frequencia']/100);
