@@ -56,6 +56,10 @@ while(1==1){
 				curl_close($ch);
 
 				$output = json_decode( $output, true );
+				if (isset($output['error'])) {
+					echo "ops... exagerei!\n";
+					sleep(30);
+				}
 				$consultas[$x]['refresh'] = $output['refresh_url'];
 				$i = -1;
 				foreach($output['results'] as $i=>$tweet){
@@ -70,8 +74,8 @@ while(1==1){
 				}else {
 					$consultas[$x]['frequencia'] -= ($consultas[$x]['frequencia']*($n>0.9?0.9:$n));
 				}
-				if ($consultas[$x]['frequencia'] < 1) {
-					$consultas[$x]['frequencia'] = 2;
+				if ($consultas[$x]['frequencia'] < 25) {
+					$consultas[$x]['frequencia'] = 50;
 				}
 				$ultimo = ($i)?$ultimo:$consultas[$x]['ultimo'];
 				$agora = microtime(true);
