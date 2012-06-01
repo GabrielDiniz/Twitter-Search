@@ -100,7 +100,9 @@ while(1==1){
 			$consultas[$x]['n']+=($wait/$fator)*($consulta['frequencia']/100);
 		}
 	}
-	usleep($wait);
+	if ($wait) {
+		usleep($wait);
+	}
 }
 ?>
 
