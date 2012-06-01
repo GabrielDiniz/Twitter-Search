@@ -31,6 +31,9 @@ while(1==1){
 	$fator  = $data[1]*1;
 	$maximo = $data[2]*1;
 	$minimo = $data[3]*1;
+	$frequencia_minima 	= $data[4]*1;
+	$retorno_frequencia	= $data[5]*1;
+	$exagero	= $data[6]*1;
 	foreach( $consultas as $x=>$consulta){
 		if($consultas[$x]['n'] > $minimo || $consultas[$x]['cont']<0)
 		{
@@ -58,7 +61,7 @@ while(1==1){
 				$output = json_decode( $output, true );
 				if (isset($output['error'])) {
 					echo "ops... exagerei!\n";
-					sleep(30);
+					sleep($exagero);
 				}
 				$consultas[$x]['refresh'] = $output['refresh_url'];
 				$i = -1;
@@ -72,10 +75,10 @@ while(1==1){
 				if ($i - $maximo > 0) {
 					$consultas[$x]['frequencia'] += ($consultas[$x]['frequencia']*($n>0.9?0.9:$n));
 				}else {
-					$consultas[$x]['frequencia'] -= ($consultas[$x]['frequencia']*($n>0.9?0.9:$n));
+					$consultas[$x]['frequencia'] -= ($consultas[$x]['frequencia']*($n>0.9?0.9:$n))*1.5;
 				}
-				if ($consultas[$x]['frequencia'] < 25) {
-					$consultas[$x]['frequencia'] = 50;
+				if ($consultas[$x]['frequencia'] < $frequencia_minima) {
+					$consultas[$x]['frequencia'] = $retorno_frequencia;
 				}
 				$ultimo = ($i)?$ultimo:$consultas[$x]['ultimo'];
 				$agora = microtime(true);
@@ -96,6 +99,7 @@ while(1==1){
 			$consultas[$x]['n']+=($wait/$fator)*($consulta['frequencia']/100);
 		}
 	}
+	usleep($wait);
 }
 ?>
 

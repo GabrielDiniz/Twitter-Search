@@ -1,12 +1,3 @@
--- phpMyAdmin SQL Dump
--- version 3.3.4
--- http://www.phpmyadmin.net
---
--- Servidor: localhost
--- Tempo de Geração: Mai 18, 2012 as 11:46 AM
--- Versão do Servidor: 5.5.22
--- Versão do PHP: 5.3.10-1ubuntu3.1
-
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 
 
@@ -29,8 +20,19 @@ CREATE TABLE IF NOT EXISTS `config` (
   `wait` float NOT NULL,
   `fator` float NOT NULL,
   `maximo` int(11) NOT NULL,
-  `minimo` int(11) NOT NULL
+  `minimo` int(11) NOT NULL,
+  `frequencia_minima` double NOT NULL,
+  `retorno_frequencia` double NOT NULL,
+  `exagero` int(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+--
+-- Extraindo dados da tabela `config`
+--
+
+INSERT INTO `config` (`wait`, `fator`, `maximo`, `minimo`, `frequencia_minima`, `retorno_frequencia`, `exagero`) VALUES
+(10000, 500000, 7, 10, 0.1, 1, 30);
+
 
 -- --------------------------------------------------------
 
@@ -44,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `queries` (
   `ultimo` varchar(20) NOT NULL,
   `frequencia` double NOT NULL DEFAULT '100',
   `ultima_execucao` double NOT NULL,
-  `block` tinyint(4) NOT NULL DEFAULT '0',
+  `block` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 ;
 
@@ -62,7 +64,3 @@ CREATE TABLE IF NOT EXISTS `tweet` (
   UNIQUE KEY `id_tweeter` (`id_tweeter`),
   FULLTEXT KEY `tweet` (`tweet`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 ;
-
-INSERT INTO `config` (`wait`, `fator`, `maximo`, `minimo`) VALUES
-(0.1, 1000, 7, 10);
-
