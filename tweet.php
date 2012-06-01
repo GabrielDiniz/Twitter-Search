@@ -62,6 +62,7 @@ while(1==1){
 				if (isset($output['error'])) {
 					echo "ops... exagerei!\n";
 					sleep($exagero);
+					continue;
 				}
 				$consultas[$x]['refresh'] = $output['refresh_url'];
 				$i = -1;
