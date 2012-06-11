@@ -62,14 +62,16 @@ while(1==1){
 				if (isset($output['error'])) {
 					echo "ops... exagerei!\n";
 					sleep($exagero);
-					continue;
 				}
 				$consultas[$x]['refresh'] = $output['refresh_url'];
 				$i = -1;
-				foreach($output['results'] as $i=>$tweet){
-					$json = str_replace("'","\'",json_encode($tweet));
-					$con->query("insert into tweet values (null,'$json','{$tweet['id_str']}')",false);
-					$ultimo = $tweet['id_str'];
+				if (isset($output['results']))
+				{
+					foreach($output['results'] as $i=>$tweet){
+						$json = str_replace("'","\'",json_encode($tweet));
+						$con->query("insert into tweet values (null,'$json','{$tweet['id_str']}')",false);
+						$ultimo = $tweet['id_str'];
+					}
 				}
 				$i++;
 				$n = (pow($i-$maximo,2)/100);
