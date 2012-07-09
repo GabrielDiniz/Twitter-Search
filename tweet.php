@@ -22,9 +22,6 @@ while(1==1){
 			);
 			$todas[] = $data[1];
 		}
-		$consultas[$data[1]]['ultimo']=$data[2];
-		$consultas[$data[1]]['frequencia']=$data[3]*1;
-		$consultas[$data[1]]['ultima_execucao']=$data[4]*1;
 	}
 	$data = $con->query("SELECT * from config");
 	$wait   = $data[0]*1;
@@ -37,18 +34,20 @@ while(1==1){
 	foreach( $consultas as $x=>$consulta){
 		if($consultas[$x]['n'] > $minimo || $consultas[$x]['cont']<0)
 		{
-			$sql = "select block from queries where id = {$consulta['id']}";
-			$block = $con->query($sql);
-			if (!$block)
+			$sql = "select block, query, ultimo, frequencia, ultima_execucao from queries where id = {$consulta['id']}";
+			$data = $con->query($sql);
+			if (!$data[0])
 			{
 				$con->query("update queries set block = 1 where id = {$consulta['id']}");
-				$consulta['ultimo'] = $con->query("SELECT ultimo from queries where id = {$consulta['id']}");
+				$consultas[$data[1]]['ultimo']=$data[2];
+				$consultas[$data[1]]['frequencia']=$data[3]*1;
+				$consultas[$data[1]]['ultima_execucao']=$data[4]*1;
 				$start = microtime(true);
 				if ($consulta['ultimo']){
-					$url = $host."?since_id=".$consulta['ultimo']."&include_entities=true&q=".$consulta['pesquisa'];
+					$url = $host."?since_id=".$consultas[$x]['ultimo']."&include_entities=true&q=".$consultas[$x]['pesquisa'];
 				}
 				else {
-					$url = $host.$parametros.$consulta['pesquisa'];
+					$url = $host.$parametros.$consultas[$x]['pesquisa'];
 				}
 				$ch = curl_init();
 				curl_setopt($ch, CURLOPT_URL, $url);
@@ -70,8 +69,7 @@ while(1==1){
 					foreach($output['results'] as $i=>$tweet){
 						$json = str_replace("'","\'",json_encode($tweet));
 						$con->query("insert into tweet values (null,'$json','{$tweet['id_str']}')",false);
-						$ultimo = $tweet['id_str'];
-					}
+					}					
 				}
 				$i++;
 				$n = (pow($i-$maximo,2)/100);
@@ -83,15 +81,14 @@ while(1==1){
 				if ($consultas[$x]['frequencia'] < $frequencia_minima) {
 					$consultas[$x]['frequencia'] = $retorno_frequencia;
 				}
-				$ultimo = ($i)?$ultimo:$consultas[$x]['ultimo'];
+				$ultimo = ($i)?$tweet['id_str']:$consultas[$x]['ultimo'];
 				$agora = microtime(true);
-				$con->query("UPDATE queries set ultimo = '$ultimo',frequencia = '{$consultas[$x]['frequencia']}', ultima_execucao = $agora WHERE id = '{$consulta['id']}'");
 				$consultas[$x]['cont'] = $i;
 				$consultas[$x]['n'] = 0;
-				$con->query("update queries set block = 0 where id = {$consulta['id']}");
+				$con->query("UPDATE queries set block = 0, ultimo = '$ultimo', frequencia = '{$consultas[$x]['frequencia']}', ultima_execucao = $agora WHERE id = '{$consultas[$x]['id']}'");
 				$data = date('d/m/Y H:i:s');
 				$separador = (strlen($consulta['pesquisa']) < 8)?"\t\t-":"\t-";
-				print_r("Depois de \033[0;34m" . number_format( $agora - $consultas[$x]['ultima_execucao'], 3) . "\033[0;0m s\tMais \033[0;32m$i\033[0;0m\tresultados para \033[0;31m{$consulta['pesquisa']}\033[0;0m$separador em \033[0;35m" . number_format( $agora - $start, 3) . "\033[0;0m s \033[0;33m$data\033[0;0m\n");
+				print_r("Depois de \033[0;34m" . number_format( $agora - $consultas[$x]['ultima_execucao'], 3) . "\033[0;0m s\tMais \033[0;32m$i\033[0;0m\tresultados para \033[0;31m{$consultas[$x]['pesquisa']}\033[0;0m$separador em \033[0;35m" . number_format( $agora - $start, 3) . "\033[0;0m s \033[0;33m$data\033[0;0m\n");
 				$consultas[$x]['ultima_execucao'] = $agora;
 				
 			}else{
@@ -99,7 +96,7 @@ while(1==1){
 				$consultas[$x]['n'] /= 2;
 			}
 		}else {
-			$consultas[$x]['n']+=($wait/$fator)*($consulta['frequencia']/100);
+			$consultas[$x]['n']+=($wait/$fator)*($consultas[$x]['frequencia']/100);
 		}
 	}
 	if ($wait) {
